@@ -17,10 +17,10 @@ services:
         PLUGIN_BUILD_UID: $PLUGIN_BUILD_UID
         PLUGIN_BUILD_GID: $PLUGIN_BUILD_GID
     ports:
-      - "80:80"
-      - "443:443"
+      - "8000:80"
+      - "8443:443"
     environment:
-      BASEROW_PUBLIC_URL: http://localhost
+      BASEROW_PUBLIC_URL: http://localhost:8000
     volumes:
       - baserow_data:/baserow/data
       - ./plugins/baserow_translate_plugin/backend:/baserow/data/plugins/baserow_translate_plugin/backend
