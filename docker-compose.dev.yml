@@ -20,7 +20,7 @@ services:
       - "8000:80"
       - "8443:443"
     environment:
-      BASEROW_PUBLIC_URL: http://localhost:8000
+      BASEROW_PUBLIC_URL: ${BASEROW_PUBLIC_URL:-http://localhost:8000}
     volumes:
       - baserow_data:/baserow/data
       - ./plugins/baserow_translate_plugin/backend:/baserow/data/plugins/baserow_translate_plugin/backend
