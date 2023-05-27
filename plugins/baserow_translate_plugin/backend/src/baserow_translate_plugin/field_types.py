@@ -1,10 +1,15 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 
+
 from rest_framework import serializers
 
+from baserow.contrib.database.views.handler import ViewHandler
 from django.db import models
 from baserow.contrib.database.fields.registries import FieldType
+from baserow.contrib.database.fields.models import Field
+from baserow.contrib.database.fields.field_cache import FieldCache
+from baserow.contrib.database.fields.dependencies.models import FieldDependency
 
 from .models import TranslationField
 
@@ -23,6 +28,26 @@ class TranslationFieldType(FieldType):
         'target_language'
     ]    
 
+
+    serializer_field_overrides = {
+        "source_field_id": serializers.IntegerField(
+            required=False,
+            allow_null=True,
+            source="source_field.id",
+            help_text="The id of the field to translate",
+        ),
+        "source_language": serializers.CharField(
+            required=True,
+            allow_null=False,
+            allow_blank=False
+        ),
+        "target_language": serializers.CharField(
+            required=True,
+            allow_null=False,
+            allow_blank=False
+        ),        
+    }    
+
     def get_serializer_field(self, instance, **kwargs):
         required = kwargs.get("required", False)
         return serializers.CharField(
@@ -39,3 +64,53 @@ class TranslationFieldType(FieldType):
         return models.TextField(
             default=None, blank=True, null=True, **kwargs
         )
+    
+    def get_field_dependencies(self, field_instance: Field, field_lookup_cache: FieldCache):
+        print(f"*** get_field_dependencies, field_instance.source_field: {field_instance.source_field}")
+        if field_instance.source_field != None:
+            return [
+                FieldDependency(
+                    dependency=field_instance.source_field,
+                    dependant=field_instance
+                )
+            ]     
+        return [] 
+
+    def row_of_dependency_updated(
+        self,
+        field,
+        starting_row,
+        update_collector,
+        field_cache: "FieldCache",
+        via_path_to_starting_table,
+    ):
+
+        print("*** row_of_dependency_updated")
+
+        source_internal_field_name = f'field_{field.source_field.id}'
+        target_internal_field_name = f'field_{field.id}'
+
+        if isinstance(starting_row, list):
+            row_list = starting_row
+        else:
+            row_list = [starting_row]
+
+        rows_to_bulk_update = []
+        for row in row_list:
+            source_value = getattr(row, source_internal_field_name)
+            # transformed_value = self.get_transformed_value(field, source_value, self.get_usage_user_id(field))
+            transformed_value = f'translation: {source_value}'
+            setattr(row, target_internal_field_name, transformed_value)
+            rows_to_bulk_update.append(row)
+
+        model = field.table.get_model()
+        model.objects.bulk_update(rows_to_bulk_update, fields=[field.db_column])
+
+        ViewHandler().field_value_updated(field)     
+        super().row_of_dependency_updated(
+            field,
+            starting_row,
+            update_collector,
+            field_cache,
+            via_path_to_starting_table,
+        )        
