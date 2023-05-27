@@ -1,4 +1,6 @@
 import pytest
+import pprint
+import pdb
 from django.shortcuts import reverse
 from rest_framework.status import HTTP_200_OK
 
@@ -38,5 +40,28 @@ def test_add_language_field(api_client, data_fixture):
     response_json = response.json()
     english_text_field_id = response_json['id']
     assert response.status_code == HTTP_200_OK
+
+    # create French translation field. 
+    # this uses the new field type which we introduced in this plugin
+    # ===============================================================
+
+    field_data = {
+        'name': 'French', 
+        'type': 'translation', 
+        'source_field_id': english_text_field_id, 
+        'source_language': 'en', 
+        'target_language': 'fr'}
+    # pdb.set_trace()
+    response = api_client.post(
+        reverse("api:database:fields:list", kwargs={"table_id": table_id}),
+        field_data,
+        format="json",
+        HTTP_AUTHORIZATION=f"JWT {token}",
+    )
+    response_json = response.json()
+    pprint.pprint(response_json)
+    assert response.status_code == HTTP_200_OK 
+    french_translation_field_id = response_json['id']
+    # pprint.pprint(response_json)
 
     assert True
