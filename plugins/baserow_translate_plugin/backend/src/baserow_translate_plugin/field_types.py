@@ -12,6 +12,7 @@ from baserow.contrib.database.fields.field_cache import FieldCache
 from baserow.contrib.database.fields.dependencies.models import FieldDependency
 
 from .models import TranslationField
+from . import translation
 
 class TranslationFieldType(FieldType):
     type = 'translation'
@@ -66,7 +67,6 @@ class TranslationFieldType(FieldType):
         )
     
     def get_field_dependencies(self, field_instance: Field, field_lookup_cache: FieldCache):
-        print(f"*** get_field_dependencies, field_instance.source_field: {field_instance.source_field}")
         if field_instance.source_field != None:
             return [
                 FieldDependency(
@@ -85,10 +85,11 @@ class TranslationFieldType(FieldType):
         via_path_to_starting_table,
     ):
 
-        print("*** row_of_dependency_updated")
 
         source_internal_field_name = f'field_{field.source_field.id}'
         target_internal_field_name = f'field_{field.id}'
+        source_language = field.source_language
+        target_language = field.target_language
 
         if isinstance(starting_row, list):
             row_list = starting_row
@@ -98,9 +99,8 @@ class TranslationFieldType(FieldType):
         rows_to_bulk_update = []
         for row in row_list:
             source_value = getattr(row, source_internal_field_name)
-            # transformed_value = self.get_transformed_value(field, source_value, self.get_usage_user_id(field))
-            transformed_value = f'translation: {source_value}'
-            setattr(row, target_internal_field_name, transformed_value)
+            translated_value = translation.translate(source_value, source_language, target_language)
+            setattr(row, target_internal_field_name, translated_value)
             rows_to_bulk_update.append(row)
 
         model = field.table.get_model()

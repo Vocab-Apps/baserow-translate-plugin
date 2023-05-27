@@ -87,4 +87,4 @@ def test_add_language_field(api_client, data_fixture):
     response_row = response.json()
     assert response.status_code == HTTP_200_OK
 
-    assert response_row[f'field_{french_translation_field_id}'] == 'Bonjour'
+    assert response_row[f'field_{french_translation_field_id}'] == 'translation (en to fr): Hello'
