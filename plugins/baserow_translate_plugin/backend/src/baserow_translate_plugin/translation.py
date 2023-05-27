@@ -7,6 +7,7 @@ from baserow.contrib.database.table.models import Table
 from baserow.contrib.database.table.signals import table_updated
 
 def translate(text, source_language, target_language):
+    # to be replaced with call to actual translation library later
     return f'translation ({source_language} to {target_language}): {text}'
 
 
