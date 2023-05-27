@@ -3,5 +3,19 @@ this file contains translation logic, interfacing with actual libraries or REST 
 responsible for translation
 """
 
+from baserow.contrib.database.table.models import Table
+
 def translate(text, source_language, target_language):
     return f'translation ({source_language} to {target_language}): {text}'
+
+
+def translate_all_rows(table_id, source_field_id, target_field_id, source_language, target_language):
+    base_queryset = Table.objects
+    table = base_queryset.select_related("database__workspace").get(id=table_id)
+    # https://docs.djangoproject.com/en/4.0/ref/models/querysets/
+    table_model = table.get_model()
+    for row in table_model.objects.all():
+        text = getattr(row, source_field_id)
+        translated_text = translate(text, source_language, target_language)
+        setattr(row, target_field_id, translated_text)
+        row.save()

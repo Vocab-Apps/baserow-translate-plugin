@@ -85,7 +85,6 @@ class TranslationFieldType(FieldType):
         via_path_to_starting_table,
     ):
 
-
         source_internal_field_name = f'field_{field.source_field.id}'
         target_internal_field_name = f'field_{field.id}'
         source_language = field.source_language
@@ -114,3 +113,30 @@ class TranslationFieldType(FieldType):
             field_cache,
             via_path_to_starting_table,
         )        
+
+    def after_create(self, field, model, user, connection, before, field_kwargs):
+        self.update_all_rows(field)
+
+    def after_update(
+        self,
+        from_field,
+        to_field,
+        from_model,
+        to_model,
+        user,
+        connection,
+        altered_column,
+        before,
+        to_field_kwargs
+    ):
+        self.update_all_rows(to_field)
+
+    def update_all_rows(self, field):
+        source_field_id = f'field_{field.source_field.id}'
+        target_field_id = f'field_{field.id}'
+        source_language = field.source_language
+        target_language = field.target_language                
+
+        table_id = field.table.id
+
+        translation.translate_all_rows(table_id, source_field_id, target_field_id, source_language, target_language)
