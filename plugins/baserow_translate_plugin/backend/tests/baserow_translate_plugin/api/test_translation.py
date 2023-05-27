@@ -25,4 +25,18 @@ def test_add_language_field(api_client, data_fixture):
     # we'll need the table_id for future API calls
     table_id = json_response['id']
 
+    # create a text field to contain English text
+    # this field is a regular baserow field type, Single line text
+    # ============================================================
+
+    response = api_client.post(
+        reverse("api:database:fields:list", kwargs={"table_id": table_id}),
+        {"name": "English", "type": "text"},
+        format="json",
+        HTTP_AUTHORIZATION=f"JWT {token}",
+    )
+    response_json = response.json()
+    english_text_field_id = response_json['id']
+    assert response.status_code == HTTP_200_OK
+
     assert True
