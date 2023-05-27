@@ -4,6 +4,7 @@ responsible for translation
 """
 
 from baserow.contrib.database.table.models import Table
+from baserow.contrib.database.table.signals import table_updated
 
 def translate(text, source_language, target_language):
     return f'translation ({source_language} to {target_language}): {text}'
@@ -19,3 +20,5 @@ def translate_all_rows(table_id, source_field_id, target_field_id, source_langua
         translated_text = translate(text, source_language, target_language)
         setattr(row, target_field_id, translated_text)
         row.save()
+    # notify the front-end that rows have been updated
+    table_updated.send(None, table=table, user=None, force_table_refresh=True)
