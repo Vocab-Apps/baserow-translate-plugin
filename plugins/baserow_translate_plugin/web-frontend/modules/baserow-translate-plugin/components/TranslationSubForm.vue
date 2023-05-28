@@ -7,7 +7,6 @@
       </label>
       <Dropdown
         v-model="values.source_field_id"
-        @input="sourceFieldSelected"
       >
         <DropdownItem
           v-for="field in tableFields"
@@ -71,15 +70,6 @@ export default {
     isFormValid() {
       return true
     },
-    async sourceFieldSelected() {
-      console.log('source_field_id: ', this.values.source_field_id);
-      const selectedField = this.$store.getters['field/get'](
-          this.values.source_field_id
-      );
-      // console.log('selectedField: ', selectedField);
-      this.selectedSourceFieldLanguage = selectedField.language;
-      console.log('selectedSourceFieldLanguage: ', this.selectedSourceFieldLanguage);
-    },    
   },
   computed: {
     tableFields() {
@@ -90,6 +80,11 @@ export default {
 
       let allFields = [primaryField];
       allFields = allFields.concat(fields);
+      
+      // remove any undefined field
+      allFields = allFields.filter((f) => {
+              return f != undefined
+      });
 
       console.log('allFields: ', allFields);
 
