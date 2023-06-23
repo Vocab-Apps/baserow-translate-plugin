@@ -8,8 +8,8 @@ class PluginNameConfig(AppConfig):
         from baserow.core.registries import plugin_registry
         from baserow.contrib.database.fields.registries import field_type_registry        
 
-        from .plugins import PluginNamePlugin
+        from .plugins import BaserowTranslatePlugin
         from .field_types import TranslationFieldType
 
-        plugin_registry.register(PluginNamePlugin())
+        plugin_registry.register(BaserowTranslatePlugin())
         field_type_registry.register(TranslationFieldType())

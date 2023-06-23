@@ -5,6 +5,12 @@ import RowEditFieldText from '@baserow/modules/database/components/row/RowEditFi
 import FunctionalGridViewFieldText from '@baserow/modules/database/components/view/grid/fields/FunctionalGridViewFieldText'
 import TranslationSubForm from '@baserow-translate-plugin/components/TranslationSubForm'
 
+import {
+  genericContainsFilter,
+  genericContainsWordFilter,
+} from '@baserow/modules/database/utils/fieldFilters'
+
+import RowCardFieldText from '@baserow/modules/database/components/card/RowCardFieldText'
 
 export class TranslationFieldType extends FieldType {
   static getType() {
@@ -30,6 +36,46 @@ export class TranslationFieldType extends FieldType {
   getRowEditFieldComponent() {
     return RowEditFieldText
   }
+
+
+  getCardComponent() {
+    return RowCardFieldText
+  }
+
+
+  getSort(name, order) {
+    return (a, b) => {
+      const stringA = a[name] === null ? '' : '' + a[name]
+      const stringB = b[name] === null ? '' : '' + b[name]
+
+      return order === 'ASC'
+          ? stringA.localeCompare(stringB)
+          : stringB.localeCompare(stringA)
+    }
+  }
+
+
+  getContainsFilterFunction() {
+    return genericContainsFilter
+  }
+
+  getContainsWordFilterFunction(field) {
+    return genericContainsWordFilter
+  }
+
+  canBeReferencedByFormulaField() {
+    return true
+  }
+
+  getIsReadOnly() {
+    return true
+  }
+
+  shouldFetchDataWhenAdded() {
+    return true
+  }
+
+
 
   getFunctionalGridViewFieldComponent() {
     return FunctionalGridViewFieldText
