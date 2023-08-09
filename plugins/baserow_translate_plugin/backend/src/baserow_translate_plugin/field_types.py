@@ -18,6 +18,7 @@ from baserow.contrib.database.fields.field_filters import (
     contains_filter,
     contains_word_filter,
 )
+from baserow.contrib.database.table.models import TableModelQuerySet
 
 from .models import TranslationField
 from . import translation
@@ -129,9 +130,15 @@ class TranslationFieldType(FieldType):
         # Would be nice if instead Baserow did this for you before calling this func!
         # Not suggesting you do anything, but instead the Baserow project itself should
         # have a nicer API here :)
-        if isinstance(starting_row, list):
+
+        if isinstance(starting_row, TableModelQuerySet):
+            # if starting_row is TableModelQuerySet (when creating multiple rows in a batch), we want to iterate over its TableModel objects
             row_list = starting_row
+        elif isinstance(starting_row, list):
+            # if we have a list, it's a list of TableModels, iterate over them
+            row_list = starting_row            
         else:
+            # we got a single TableModel, transform it into a list of one element
             row_list = [starting_row]
 
         rows_to_bulk_update = []
