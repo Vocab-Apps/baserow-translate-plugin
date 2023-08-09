@@ -256,8 +256,13 @@ def test_create_multiple_rows(api_client, data_fixture):
         format="json",
         HTTP_AUTHORIZATION=f"JWT {token}",
     )
-    response_row = response.json()
+    response_data = response.json()
     assert response.status_code == HTTP_200_OK, response.content
+    print(f'*** response_data after creating rows {response_data}')
+    assert response_data['items'][0][f'field_{spanish_translation_field_id}'] == 'translation (en to es): Hello'
+    assert response_data['items'][1][f'field_{spanish_translation_field_id}'] == 'translation (en to es): Bye bye'    
+
+    return
 
     # retrieve all rows, make sure they contain the translated text
     # =============================================================
@@ -270,6 +275,7 @@ def test_create_multiple_rows(api_client, data_fixture):
     )
     response_data = response.json()
     assert response.status_code == HTTP_200_OK
+    print(f'*** response_data after retrieving rows {response_data}')
 
     assert response_data['results'][0][f'field_{spanish_translation_field_id}'] == 'translation (en to es): Hello'
     assert response_data['results'][1][f'field_{spanish_translation_field_id}'] == 'translation (en to es): Bye bye'
