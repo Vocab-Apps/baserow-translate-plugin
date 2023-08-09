@@ -39,6 +39,22 @@ export PLUGIN_BUILD_GID=$(id -g)
    code reloading.
    1. `docker-compose -f docker-compose.multi-service.dev.yml up -d --build`
 
+## How to run tests
+setup the same env vars as above:
+```bash
+export COMPOSE_DOCKER_CLI_BUILD=1
+export DOCKER_BUILDKIT=1
+export PLUGIN_BUILD_UID=$(id -u)
+export PLUGIN_BUILD_GID=$(id -g)
+```
+enter container, go to the tests directory and run tests:
+```bash
+docker compose -f docker-compose.dev.yml exec baserow-translate-plugin /baserow.sh backend-cmd bash -c bash
+cd /baserow/data/plugins/baserow_translate_plugin/backend/tests
+pytest
+```
+you should see the test `baserow_translate_plugin/api/test_translation.py` succeed.
+
 ## Missing features TODO
 
 1. A templated setup guide in the generated folder itself.
