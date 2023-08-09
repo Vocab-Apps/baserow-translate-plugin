@@ -16,8 +16,10 @@ def test_add_language_field(api_client, data_fixture):
     # now, create a baserow database table
     # ====================================
 
+    # Changed from the async create as that spawns a celery task to do the creation
+    # in the background which we probably don't want in a test?
     url = reverse(
-        "api:database:tables:async_create", kwargs={"database_id": database.id}
+        "api:database:tables:create", kwargs={"database_id": database.id}
     )
     response = api_client.post(
         url, {"name": "test_table_1"}, format="json", HTTP_AUTHORIZATION=f"JWT {token}"
@@ -100,7 +102,7 @@ def test_update_all_rows(api_client, data_fixture):
     database = data_fixture.create_database_application(user=user)
     # create table
     url = reverse(
-        "api:database:tables:async_create", kwargs={"database_id": database.id}
+        "api:database:tables:create", kwargs={"database_id": database.id}
     )
     response = api_client.post(
         url, {"name": "test_table_1"}, format="json", HTTP_AUTHORIZATION=f"JWT {token}"

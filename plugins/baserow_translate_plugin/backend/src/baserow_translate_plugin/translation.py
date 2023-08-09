@@ -13,7 +13,8 @@ def translate(text, source_language, target_language):
 
 def translate_all_rows(table_id, source_field_id, target_field_id, source_language, target_language):
     base_queryset = Table.objects
-    table = base_queryset.select_related("database__workspace").get(id=table_id)
+    # Didn't see like we needed to select the workspace for every row that we get?
+    table = base_queryset.get(id=table_id)
     # https://docs.djangoproject.com/en/4.0/ref/models/querysets/
     table_model = table.get_model()
     for row in table_model.objects.all():

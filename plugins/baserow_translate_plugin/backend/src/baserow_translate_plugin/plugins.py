@@ -5,7 +5,7 @@ from django.urls import path, include
 from .api import urls as api_urls
 
 
-class PluginNamePlugin(Plugin):
+class BaserowTranslatePlugin(Plugin):
     type = "baserow_translate_plugin"
 
     def get_api_urls(self):
