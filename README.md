@@ -39,6 +39,9 @@ export PLUGIN_BUILD_GID=$(id -g)
    code reloading.
    1. `docker-compose -f docker-compose.multi-service.dev.yml up -d --build`
 
+In most cases, this should work:
+`docker compose -f docker-compose.dev.yml up --build`
+
 ## How to run tests
 setup the same env vars as above:
 ```bash
