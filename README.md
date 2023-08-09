@@ -21,6 +21,8 @@ export PLUGIN_BUILD_UID=$(id -u)
 export PLUGIN_BUILD_GID=$(id -g)
 ```
 
+In my own particular case, I want to change the external hostname, so I use: (warning: will not work for everyone, most people can use the default / localhost): ```export BASEROW_PUBLIC_URL=http://`hostname -s`.webdev.ipv6n.net:8000```
+
 1. `docker-compose.yml` - This is the simplest compose file that will run the your
    plugin installed into a single container, use `docker-compose up`.
 2. `docker-compose.multi-service.yml` - This is a more complex compose file which runs
