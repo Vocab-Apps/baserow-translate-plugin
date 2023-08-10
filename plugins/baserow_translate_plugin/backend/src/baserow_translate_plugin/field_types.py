@@ -277,6 +277,8 @@ class TranslationFieldType(FieldType):
 
 
 class ChatGPTFieldType(FieldType):
+    """This field type allows querying ChatGPT using baserow content, with a customizable template for the prompt"""
+
     type = 'chatgpt'
     model_class = ChatGPTField
 
@@ -326,6 +328,9 @@ class ChatGPTFieldType(FieldType):
 
     def get_field_dependencies(self, field_instance: Field,
                                field_lookup_cache: FieldCache):
+        """getting field dependencies is more complex here, because the user can add new field 
+        variables, which creates a new dependency"""
+
         if field_instance.prompt != None:
             # need to parse the prompt to find the fields it depends on
             fields_to_expand = self.get_fields_in_prompt(field_instance.prompt)
@@ -350,9 +355,11 @@ class ChatGPTFieldType(FieldType):
             via_path_to_starting_table,
     ):
 
+        # the prompt template, with field variables not yet expanded
         prompt_template = field.prompt
+        # the field names present in the prompt
         fields_to_expand = self.get_fields_in_prompt(prompt_template)
-        # need to expand the variables inside prompt_template
+        # internal field name that we'll store the result into
         target_internal_field_name = field.db_column
 
         if isinstance(starting_row, TableModelQuerySet):
