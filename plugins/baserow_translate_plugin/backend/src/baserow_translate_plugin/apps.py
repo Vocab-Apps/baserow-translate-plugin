@@ -1,3 +1,5 @@
+import os
+
 from baserow.core.registries import plugin_registry
 from django.apps import AppConfig
 
@@ -19,6 +21,12 @@ class BaserowTranslatePluginDjangoAppConfig(AppConfig):
         # as their data will be stored in $HOME/.local/share/argos-translate/
         install_argos_translate_package('en', 'fr')
         install_argos_translate_package('fr', 'en')
+
+        # configure OpenAI
+        openai_api_key = os.environ.get('OPENAI_API_KEY', '')
+        if openai_api_key:
+            import openai
+            openai.api_key = openai_api_key
 
         from .plugins import BaserowTranslatePlugin
 

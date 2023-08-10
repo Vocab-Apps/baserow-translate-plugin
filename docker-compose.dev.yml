@@ -21,6 +21,7 @@ services:
       - "8443:443"
     environment:
       BASEROW_PUBLIC_URL: ${BASEROW_PUBLIC_URL:-http://localhost:8000}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
     volumes:
       - baserow_data:/baserow/data
       - ./plugins/baserow_translate_plugin/backend:/baserow/data/plugins/baserow_translate_plugin/backend

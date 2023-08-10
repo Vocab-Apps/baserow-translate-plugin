@@ -9,6 +9,7 @@ from baserow.contrib.database.table.models import Table
 from baserow.contrib.database.table.signals import table_updated
 
 import argostranslate.translate
+import openai
 
 logger = logging.getLogger(__name__)
 
@@ -38,8 +39,13 @@ def translate_all_rows(table_id, source_field_id, target_field_id, source_langua
     table_updated.send(None, table=table, user=None, force_table_refresh=True)
 
 def chatgpt(prompt):
-    # to be replaced with call to actual call to chatgpt later
-    return f'chatgpt: {prompt}'
+    if TEST_MODE or openai.api_key == None:
+        return f'chatgpt: {prompt}'
+    else:
+        # call OpenAI chatgpt
+        logger.info(f'calling chatgpt with prompt [{prompt}]')
+        chat_completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "user", "content": prompt}])
+        return chat_completion['choices'][0]['message']['content']
 
 
 def chatgpt_all_rows(table_id, target_field_id, prompt, prompt_field_names):
