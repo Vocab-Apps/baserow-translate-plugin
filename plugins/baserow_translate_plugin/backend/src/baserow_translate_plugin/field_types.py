@@ -328,7 +328,7 @@ class ChatGPTFieldType(FieldType):
                                field_lookup_cache: FieldCache):
         if field_instance.prompt != None:
             # need to parse the prompt to find the fields it depends on
-            fields_to_expand = self.get_fields_in_prompt(self, field_instance.prompt)
+            fields_to_expand = self.get_fields_in_prompt(field_instance.prompt)
             result = []
             for field_name in fields_to_expand:
                 # for each field that we found in the prompt, add a dependency
@@ -351,7 +351,7 @@ class ChatGPTFieldType(FieldType):
     ):
 
         prompt_template = field.prompt
-        fields_to_expand = self.get_fields_in_prompt(self, prompt_template)
+        fields_to_expand = self.get_fields_in_prompt(prompt_template)
         # need to expand the variables inside prompt_template
         target_internal_field_name = field.db_column
 

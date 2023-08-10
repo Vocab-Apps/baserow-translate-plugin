@@ -82,5 +82,5 @@ def test_add_chatgpt_field(api_client, data_fixture):
     response_row = response.json()
     assert response.status_code == HTTP_200_OK
 
-    assert response_row[f'field_{chatgpt_field_id}'] == 'chatgpt: Hello'
+    assert response_row[f'field_{chatgpt_field_id}'] == 'chatgpt: Translate text into French: Hello'
 
