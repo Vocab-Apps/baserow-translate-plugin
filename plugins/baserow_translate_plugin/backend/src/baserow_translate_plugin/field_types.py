@@ -410,21 +410,12 @@ class ChatGPTFieldType(FieldType):
         self.update_all_rows(to_field)
 
     def update_all_rows(self, field):
-        # not implemented yet
-        return
-
-        source_internal_field_name = field.source_field.db_column
         target_internal_field_name = field.db_column
-
-        source_language = field.source_language
-        target_language = field.target_language
-
+        prompt = field.prompt
         table_id = field.table.id
+        prompt_field_names = self.get_fields_in_prompt(prompt)
 
-        translation.translate_all_rows(table_id, source_internal_field_name,
-                                       target_internal_field_name,
-                                       source_language,
-                                       target_language)
+        translation.chatgpt_all_rows(table_id, target_internal_field_name, prompt, prompt_field_names)
 
     # Used by some of our helper scripts
     def random_value(self, instance, fake, cache):
