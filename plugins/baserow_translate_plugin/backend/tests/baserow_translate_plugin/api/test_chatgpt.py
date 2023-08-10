@@ -184,3 +184,93 @@ def test_add_chatgpt_multiple_fields(api_client, data_fixture):
 
     assert response_row[f'field_{chatgpt_field_id}'] == 'chatgpt: Translate text into Italian: Hello'
 
+
+@pytest.mark.django_db(transaction=True)
+def test_chatgpt_update_all_rows(api_client, data_fixture):
+    # first, create a test user so we can interact with the API
+    user, token = data_fixture.create_user_and_token()
+
+    # create a baserow database
+    # =========================
+    database = data_fixture.create_database_application(user=user)
+
+    # now, create a baserow database table
+    # ====================================
+
+    url = f'/api/database/tables/database/{database.id}/'
+    response = api_client.post(
+        url, {"name": "test_table_1"}, format="json", HTTP_AUTHORIZATION=f"JWT {token}"
+    )
+    assert response.status_code == HTTP_200_OK
+    json_response = response.json()
+    # we'll need the table_id for future API calls
+    table_id = json_response['id']
+
+    # create a text field to contain English text
+    # this field is a regular baserow field type, Single line text
+    # ============================================================
+
+    response = api_client.post(
+        reverse("api:database:fields:list", kwargs={"table_id": table_id}),
+        {"name": "English", "type": "text"},
+        format="json",
+        HTTP_AUTHORIZATION=f"JWT {token}",
+    )
+    response_json = response.json()
+    english_text_field_id = response_json['id']
+    assert response.status_code == HTTP_200_OK
+
+    # enter some text in the English field (multiple rows)
+    # ====================================================
+
+    url = f'/api/database/rows/table/{table_id}/batch/'
+    data = {
+        'items': [ 
+            {f"field_{english_text_field_id}": "Hello"},
+            {f"field_{english_text_field_id}": "Goodbye"}
+        ]
+    }
+    response = api_client.post(
+        url,
+        data,
+        format="json",
+        HTTP_AUTHORIZATION=f"JWT {token}",
+    )
+    assert response.status_code == HTTP_200_OK
+
+    # create ChatGPT field. 
+    # this uses the new field type which we introduced in this plugin
+    # ===============================================================
+
+    field_data = {
+        'name': 'ChatGPT Translate', 
+        'type': 'chatgpt', 
+        'prompt': 'Translate text into French: {English}'}
+    response = api_client.post(
+        reverse("api:database:fields:list", kwargs={"table_id": table_id}),
+        field_data,
+        format="json",
+        HTTP_AUTHORIZATION=f"JWT {token}",
+    )
+    response_json = response.json()
+    pprint.pprint(response_json)
+    assert response.status_code == HTTP_200_OK 
+    chatgpt_field_id = response_json['id']
+
+
+    # retrieve the row, make sure it contains the french translation
+    # ==============================================================
+
+    url = f'/api/database/rows/table/{table_id}/'
+    response = api_client.get(
+        url,
+        format="json",
+        HTTP_AUTHORIZATION=f"JWT {token}",
+    )
+    response_data = response.json()
+    assert response.status_code == HTTP_200_OK
+
+    result_count = response_data['count']
+    # check the last two rows
+    assert response_data['results'][result_count-2][f'field_{chatgpt_field_id}'] == 'chatgpt: Translate text into French: Hello'
+    assert response_data['results'][result_count-1][f'field_{chatgpt_field_id}'] == 'chatgpt: Translate text into French: Goodbye'
