@@ -4,8 +4,12 @@ import pdb
 from django.shortcuts import reverse
 from rest_framework.status import HTTP_200_OK
 
+import baserow_translate_plugin.translation
+
 @pytest.mark.django_db(transaction=True)
 def test_add_language_field(api_client, data_fixture):
+    baserow_translate_plugin.translation.TEST_MODE = True
+
     # first, create a test user so we can interact with the API
     user, token = data_fixture.create_user_and_token()
 
@@ -90,6 +94,8 @@ def test_add_language_field(api_client, data_fixture):
 
 @pytest.mark.django_db(transaction=True)
 def test_update_all_rows(api_client, data_fixture):
+    baserow_translate_plugin.translation.TEST_MODE = True
+    
     # first, create a test user so we can interact with the API
     user, token = data_fixture.create_user_and_token()
 
@@ -192,6 +198,8 @@ def test_update_all_rows(api_client, data_fixture):
 @pytest.mark.django_db(transaction=True)
 def test_create_multiple_rows(api_client, data_fixture):
     """create multiple rows at once, which simulates the pasting multiple rows of data action"""
+
+    baserow_translate_plugin.translation.TEST_MODE = True
 
     # first, create a test user so we can interact with the API
     user, token = data_fixture.create_user_and_token()
