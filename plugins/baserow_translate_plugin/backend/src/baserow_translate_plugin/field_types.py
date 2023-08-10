@@ -410,9 +410,13 @@ class ChatGPTFieldType(FieldType):
         self.update_all_rows(to_field)
 
     def update_all_rows(self, field):
+        # this is the internal field id where we'll put the result of the chatgpt query
         target_internal_field_name = field.db_column
+        # the prompt, with field variables not expanded yet
         prompt = field.prompt
+        # the table id which contains the target field
         table_id = field.table.id
+        # get all the field names present in the prompt
         prompt_field_names = self.get_fields_in_prompt(prompt)
 
         translation.chatgpt_all_rows(table_id, target_internal_field_name, prompt, prompt_field_names)
