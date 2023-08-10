@@ -6,3 +6,4 @@ set -euo pipefail
 # first time with this plugin already installed and built. It should impotently run
 # any runtime setup that involves doing things with the embedded postgres database
 # and/or the data volume.
+

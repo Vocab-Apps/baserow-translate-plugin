@@ -17,11 +17,3 @@ set -euo pipefail
 # Instead this file is ideal for any other installation custom steps here required by
 # your plugin. For example installing a postgres extension used by your plugin.
 
-# install argostranslate language packs (only french/english)
-argospm update
-argospm install translate-en_fr
-argospm install translate-fr_en
-
-# if you'd like to instal everything
-# argospm install translate
-# more details: https://github.com/argosopentech/argos-translate

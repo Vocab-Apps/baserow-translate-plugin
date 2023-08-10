@@ -3,12 +3,24 @@ this file contains translation logic, interfacing with actual libraries or REST 
 responsible for translation
 """
 
+import logging
+
 from baserow.contrib.database.table.models import Table
 from baserow.contrib.database.table.signals import table_updated
 
+import argostranslate.translate
+
+logger = logging.getLogger(__name__)
+
+TEST_MODE = False
+
 def translate(text, source_language, target_language):
-    # to be replaced with call to actual translation library later
-    return f'translation ({source_language} to {target_language}): {text}'
+    if TEST_MODE:
+        return f'translation ({source_language} to {target_language}): {text}'
+    else:
+        # call argos translate
+        logger.info(f'translating [{text}] from {source_language} to {target_language}')
+        return argostranslate.translate.translate(text, source_language, target_language)
 
 
 def translate_all_rows(table_id, source_field_id, target_field_id, source_language, target_language):
