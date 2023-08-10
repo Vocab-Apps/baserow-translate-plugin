@@ -24,3 +24,7 @@ def translate_all_rows(table_id, source_field_id, target_field_id, source_langua
         row.save()
     # notify the front-end that rows have been updated
     table_updated.send(None, table=table, user=None, force_table_refresh=True)
+
+def chatgpt(prompt):
+    # to be replaced with call to actual call to chatgpt later
+    return f'chatgpt: {prompt}'

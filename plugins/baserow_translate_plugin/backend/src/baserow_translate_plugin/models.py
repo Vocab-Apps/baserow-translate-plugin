@@ -24,4 +24,11 @@ class TranslationField(Field):
         help_text="Target Language",
     )
 
+class ChatGPTField(Field):
+    prompt = models.CharField(
+        max_length=4096,
+        blank=True,
+        default="",
+        help_text="Prompt for chatgpt",
+    )
 

@@ -12,6 +12,7 @@ class BaserowTranslatePluginDjangoAppConfig(AppConfig):
 
         # register our new field type
         from baserow.contrib.database.fields.registries import field_type_registry
-        from .field_types import TranslationFieldType
+        from .field_types import TranslationFieldType, ChatGPTFieldType
 
-        field_type_registry.register(TranslationFieldType())        
+        field_type_registry.register(TranslationFieldType())
+        field_type_registry.register(ChatGPTFieldType())
