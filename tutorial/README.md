@@ -9,13 +9,13 @@ We will introduce two new *field types*:
 The full example code is here: https://github.com/Language-Tools/baserow-translate-plugin
 
  ## Actually, what can Baserow plugins do ?
- At a super high level, Baserow is a Python Django app, and by writing python code, you can extend it in various ways. This tutorial focuses on introducing new *field types* (think Text, Date, Number, Formula, etc) which take input from another field, and produce a result. 
+ At a super high level, Baserow is a Python Django app, and by writing python code, you can extend it in various ways. This tutorial focuses on introducing new *field types* (think Text, Date, Number, Formula, etc) which take input from another field, and produce a result.
 
  ## Do I need a plugin ?
  As always with programming, start with the most simple solution that works. Baserow has various import methods, a REST API, and webhooks. In most cases, you can use Baserow with no or very little programming. In this case, we are introducing some new logic as well as GUI changes, so the plugin framework is suitable for us.
 
  ## What are limitations of plugins ?
- Technically, you can do lots of things with plugins, and pretty much customize every aspect of Baserow. Right now, plugins need to be installed offline, there is no such thing as an online marketplace where anyone can install a plugin with a click. If you are familiar with self-hosting apps, this is not a concern.
+ Technically, you can do lots of things with plugins, and pretty much customize every aspect of Baserow. Right now, plugins need to be installed offline and deployed in a standalone Baserow instance, there is no such thing as an online marketplace where anyone can install a plugin with a click. If you are familiar with self-hosting apps, this is not a concern.
 
  # Let's get started
  What do you need ? A Linux server with docker and python 3.9. You also need to either be running  on the machine (like a linux desktop), or you need some way to access the machine over the internet since Baserow is a web app. More info here: https://baserow.io/docs/installation%2Finstall-on-ubuntu
@@ -134,4 +134,47 @@ translate-plugin  |  [BASEROW-WATCHER][2023-08-22 22:28:17] ====================
 translate-plugin  |  [BASEROW-WATCHER][2023-08-22 22:28:17] Baserow is now available at http://vocabai.webdev.ipv6n.net:8000
 ```
 
-And that's when you know you can open the web interface. In my case, I go to http://vocabai.webdev.ipv6n.net:8000. If you see the Baserow login page, you know that everything is up and running.
+And that's when you know you can open the web interface. In my case, I go to http://vocabai.webdev.ipv6n.net:8000. If you see the Baserow login page, you know that everything is up and running. You'll need to create a user so you can access Baserow and enter some data for later.
+
+# Let's start making code changes
+
+## Additional python modules
+Open `backend/requirements/base.txt`. You can add additional python modules there, and we need the two following modules, so just append them at the end of the file:
+```
+argostranslate
+openai
+```
+`argostranslate` is the open source machine translation module (https://github.com/argosopentech/argos-translate), and `openai` is the module you need to make OpenAI ChatGPT API calls.
+
+Now, open `plugins/translate_plugin/backend/src/translate_plugin/apps.py`. We want to add some initialization code when the plugin first starts up. Add a new function:
+```
+def install_argos_translate_package(from_code, to_code):
+    import argostranslate.package
+    argostranslate.package.update_package_index()
+    available_packages = argostranslate.package.get_available_packages()
+    package_to_install = next(
+        filter(lambda x: x.from_code == from_code and x.to_code == to_code, available_packages)
+    )
+    argostranslate.package.install_from_path(package_to_install.download())        
+```
+and add this at the beginning of the `ready(self)` function:
+```
+        # install argostranslate language packs. they need to be installed by the user id running baserow,
+        # as their data will be stored in $HOME/.local/share/argos-translate/
+        install_argos_translate_package('en', 'fr')
+        install_argos_translate_package('fr', 'en')
+
+        # configure OpenAI
+        openai_api_key = os.environ.get('OPENAI_API_KEY', '')
+        if openai_api_key:
+            import openai
+            openai.api_key = openai_api_key
+```
+add `import os` at the top of the file.
+
+What does this do ? The ArgosTranslate library requires to install language packs, and we're installing just French and English, to keep things simple. We're also configuring the OpenAI API key (you'll need one to try the ChatGPT field).
+
+Now start up again. You should see docker install the argostranslate and openai python modules, then Baserow will start up again.
+```
+docker compose -f docker-compose.dev.yml up --build
+```
