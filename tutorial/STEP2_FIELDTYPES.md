@@ -288,3 +288,8 @@ We're almost done with the backend code. One more thing, we need to register our
         field_type_registry.register(TranslationFieldType())
         field_type_registry.register(ChatGPTFieldType())
 ```
+
+After that's done, let's restart our instance again:
+```
+docker compose -f docker-compose.dev.yml up --build
+```
