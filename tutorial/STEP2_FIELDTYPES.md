@@ -206,3 +206,85 @@ So we need some logic to expand the variables in the prompt, and here it is. The
             rows_to_bulk_update.append(row)
 ```
 Besides that, the `ChatGPTFieldType` shares a lot of similarities with `TranslationFieldType`.
+
+## Translation Logic
+We need to call the translation APIs somewhere. Let's create the file `plugins/translate_plugin/backend/src/translate_plugin/translation.py`. Refer to the sample code for full contents, but i'll comemnt on some methods here.
+
+This method translates a single field. It calls the ArgosTranslate library, which is a free open source machine translation library.
+```
+def translate(text, source_language, target_language):
+    # call argos translate
+    logger.info(f'translating [{text}] from {source_language} to {target_language}')
+    return argostranslate.translate.translate(text, source_language, target_language)
+```
+
+If we added a translation field to an existing table, we need to populate a translation for every row of the table. We use the following method, which will iterate over all the rows, identify the source and target fields, call the translation method and save the new record.
+```
+def translate_all_rows(table_id, source_field_id, target_field_id, source_language, target_language):
+    base_queryset = Table.objects
+    # Didn't see like we needed to select the workspace for every row that we get?
+    table = base_queryset.get(id=table_id)
+    # https://docs.djangoproject.com/en/4.0/ref/models/querysets/
+    table_model = table.get_model()
+    for row in table_model.objects.all():
+        text = getattr(row, source_field_id)
+        translated_text = translate(text, source_language, target_language)
+        setattr(row, target_field_id, translated_text)
+        row.save()
+    # notify the front-end that rows have been updated
+    table_updated.send(None, table=table, user=None, force_table_refresh=True)
+```
+
+The ChatGPT method is simple, it takes a single prompt and returns the output:
+```
+def chatgpt(prompt):
+    # call OpenAI chatgpt
+    logger.info(f'calling chatgpt with prompt [{prompt}]')
+    chat_completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "user", "content": prompt}])
+    return chat_completion['choices'][0]['message']['content']
+```
+
+However, populating a chatgpt field on all rows requires doing this prompt template expansion logic again:
+```
+def chatgpt_all_rows(table_id, target_field_id, prompt, prompt_field_names):
+    base_queryset = Table.objects
+    table = base_queryset.get(id=table_id)
+    table_model = table.get_model()
+
+    # we'll build this map on the first row
+    field_name_to_field_id_map = {}
+
+    for row in table_model.objects.all():
+        # do we need to build the map ?
+        if len(field_name_to_field_id_map) == 0:
+            for field in row.get_fields():
+                field_name_to_field_id_map[field.name] = field.db_column
+
+        # full expand the prompt
+        expanded_prompt = prompt
+        for field_name in prompt_field_names:
+            internal_field_name = field_name_to_field_id_map[field_name]
+            field_value = getattr(row, internal_field_name)
+            if field_value == None:
+                field_value = ''
+            expanded_prompt = expanded_prompt.replace('{' + field_name + '}', field_value)
+
+        # call chatgpt api, and save row.
+        chatgpt_result = chatgpt(expanded_prompt)
+        setattr(row, target_field_id, chatgpt_result)
+        row.save()
+
+    # notify the front-end that rows have been updated
+    table_updated.send(None, table=table, user=None, force_table_refresh=True)    
+```
+
+## Registering our field types
+We're almost done with the backend code. One more thing, we need to register our two new field types. Open `plugins/translate_plugin/backend/src/translate_plugin/apps.py`. At the end of the `ready(self)`, add the following:
+```
+        # register our new field type
+        from baserow.contrib.database.fields.registries import field_type_registry
+        from .field_types import TranslationFieldType, ChatGPTFieldType
+
+        field_type_registry.register(TranslationFieldType())
+        field_type_registry.register(ChatGPTFieldType())
+```
