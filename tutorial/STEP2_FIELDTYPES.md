@@ -208,7 +208,7 @@ So we need some logic to expand the variables in the prompt, and here it is. The
 Besides that, the `ChatGPTFieldType` shares a lot of similarities with `TranslationFieldType`.
 
 ## Translation Logic
-We need to call the translation APIs somewhere. Let's create the file `plugins/translate_plugin/backend/src/translate_plugin/translation.py`. Refer to the sample code for full contents, but i'll comemnt on some methods here.
+We need to call the translation APIs somewhere. Let's create the file `plugins/translate_plugin/backend/src/translate_plugin/translation.py`. Refer to the sample code for full contents, but i'll comment on some methods here.
 
 This method translates a single field. It calls the ArgosTranslate library, which is a free open source machine translation library.
 ```
@@ -293,3 +293,56 @@ After that's done, let's restart our instance again:
 ```
 docker compose -f docker-compose.dev.yml up --build
 ```
+We need to do one more thing, we have to apply a *django migration*, because we added a new model. In database terminology, a migration just means you're updating your table schema in some automated way. This is documented here: https://baserow.io/docs/plugins%2Ffield-type
+
+```
+# Set these env vars to make sure mounting your source code into the container uses
+# the correct user and permissions.
+export PLUGIN_BUILD_UID=$(id -u)
+export PLUGIN_BUILD_GID=$(id -g)
+docker container exec translate-plugin /baserow.sh backend-cmd manage makemigrations translate_plugin
+docker container exec translate-plugin /baserow.sh backend-cmd manage migrate translate_plugin
+```
+You should see the following output:
+```
+~/python/translate-plugin
+luc@vocabai$ docker container exec translate-plugin /baserow.sh backend-cmd manage makemigrations translate_plugin
+ [STARTUP][2023-08-30 15:04:20] No DATABASE_HOST or DATABASE_URL provided, using embedded postgres.
+ [STARTUP][2023-08-30 15:04:20] Using embedded baserow redis as no REDIS_HOST or REDIS_URL provided.
+ [STARTUP][2023-08-30 15:04:20] Importing REDIS_PASSWORD secret from /baserow/data/.redispass
+ [STARTUP][2023-08-30 15:04:20] Importing SECRET_KEY secret from /baserow/data/.secret
+ [STARTUP][2023-08-30 15:04:20] Importing BASEROW_JWT_SIGNING_KEY secret from /baserow/data/.jwt_signing_key
+ [STARTUP][2023-08-30 15:04:20] Importing DATABASE_PASSWORD secret from /baserow/data/.pgpass
+OTEL_RESOURCE_ATTRIBUTES=service.namespace=Baserow,service.version=1.19.1,deployment.environment=unknown
+Loaded backend plugins: translate_plugin
+Migrations for 'translate_plugin':
+  /baserow/data/plugins/translate_plugin/backend/src/translate_plugin/migrations/0001_initial.py
+    - Create model ChatGPTField
+    - Create model TranslationField
+
+~/python/translate-plugin
+luc@vocabai$ docker container exec translate-plugin /baserow.sh backend-cmd manage migrate translate_plugin
+ [STARTUP][2023-08-30 15:04:33] No DATABASE_HOST or DATABASE_URL provided, using embedded postgres.
+ [STARTUP][2023-08-30 15:04:33] Using embedded baserow redis as no REDIS_HOST or REDIS_URL provided.
+ [STARTUP][2023-08-30 15:04:33] Importing REDIS_PASSWORD secret from /baserow/data/.redispass
+ [STARTUP][2023-08-30 15:04:33] Importing SECRET_KEY secret from /baserow/data/.secret
+ [STARTUP][2023-08-30 15:04:33] Importing BASEROW_JWT_SIGNING_KEY secret from /baserow/data/.jwt_signing_key
+ [STARTUP][2023-08-30 15:04:33] Importing DATABASE_PASSWORD secret from /baserow/data/.pgpass
+OTEL_RESOURCE_ATTRIBUTES=service.namespace=Baserow,service.version=1.19.1,deployment.environment=unknown
+Loaded backend plugins: translate_plugin
+Operations to perform:
+  Apply all migrations: translate_plugin
+Clearing Baserow's internal generated model cache...
+Done clearing cache.
+Running migrations:
+  Applying translate_plugin.0001_initial... OK
+Submitting the sync templates task to run asynchronously in celery after the migration...
+Created 133 operations...
+Deleted 27 un-registered operations...
+Checking to see if formulas need updating...
+2023-08-30 15:04:37.304 | INFO     | baserow.contrib.database.formula.migrations.handler:migrate_formulas:167 - Found 0 batches of formulas to migrate from version None to 5.
+Finished migrating formulas: : 0it [00:00, ?it/s]
+Syncing default roles: 100%|██████████| 7/7 [00:00<00:00, 64.91it/s]
+```
+
+And we are now completely done with the backend changes. Let's move on to the frontend.
