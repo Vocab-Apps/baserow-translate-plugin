@@ -48,6 +48,9 @@ After creating the field models, we need to tell our Baserow plugin how these ne
 The code for the field types will be complicated, so I won't copy it entirely here, you can look at the sample code and copy from there. But i'll cover a few points.
 
 First, we need to declare the field type properly, the *type* wil uniquely identify the filed, and model_class indicates the field model we'll use to store the atttributes of the field.
+
+### TranslationFieldType
+
 ```
 class TranslationFieldType(FieldType):
     type = 'translation'
@@ -118,3 +121,88 @@ Let's also look at the code for `row_of_dependency_updated`. This is the method 
             via_path_to_starting_table,
         )
 ```
+So we saw above that `row_of_dependency_updated` gets called when a single row is being edited. What if we add the Translation field to an existing table which already full of rows ? That's when the `after_create` and `after_update` methods come in. If your table already contains the *French* column, and you want to add a translation to *German*, then after the field is created, `after_create` will be called, and the code will be expected to populate all the translations. If you later change your mind and decide you want to translate to Italian instead, you'll edit the field properties, and then the `after_update` method will get called, populating the German translation for every row.
+
+```
+    def after_create(self, field, model, user, connection, before, field_kwargs):
+        self.update_all_rows(field)
+
+    def after_update(
+            self,
+            from_field,
+            to_field,
+            from_model,
+            to_model,
+            user,
+            connection,
+            altered_column,
+            before,
+            to_field_kwargs
+    ):
+        self.update_all_rows(to_field)
+
+    def update_all_rows(self, field):
+        source_internal_field_name = field.source_field.db_column
+        target_internal_field_name = field.db_column
+
+        source_language = field.source_language
+        target_language = field.target_language
+
+        table_id = field.table.id
+
+        translation.translate_all_rows(table_id, source_internal_field_name,
+                                       target_internal_field_name,
+                                       source_language,
+                                       target_language)
+```
+
+### ChatGPTFieldType
+This field type is simpler, it only stores a single piece of text, the prompt. However to make it useful, that prompt can references other fields in your Baserow table. The goal is to be able to do things like that:
+```
+Translate from German to French: {German Field}
+```
+and *German Field* is a text field in baserow. For each row, Baserow will expand this to for example *Translate from German to French: Guten Tag* before sending it to the OpenAI API.
+
+So we need some logic to expand the variables in the prompt, and here it is. The `get_field_dependencies` method will examine the prompt and correctly declare which fields we depend on.
+```
+    def get_fields_in_prompt(self, prompt):
+        fields_to_expand = re.findall(r'{(.*?)}', prompt)
+        return fields_to_expand
+
+    def get_field_dependencies(self, field_instance: Field,
+                               field_lookup_cache: FieldCache):
+        """getting field dependencies is more complex here, because the user can add new field 
+        variables, which creates a new dependency"""
+
+        if field_instance.prompt != None:
+            # need to parse the prompt to find the fields it depends on
+            fields_to_expand = self.get_fields_in_prompt(field_instance.prompt)
+            result = []
+            for field_name in fields_to_expand:
+                # for each field that we found in the prompt, add a dependency
+                result.append(
+                    FieldDependency(
+                        dependency=field_lookup_cache.lookup_by_name(field_instance.table, field_name),
+                        dependant=field_instance
+                    )
+                )   
+            return result
+        return []
+```
+
+`row_of_dependency_updated` also has some special logic, to fully expand the variables inside the prompt:
+```
+        for row in row_list:
+            # fully expand the prompt
+            expanded_prompt = prompt_template
+            for field_name in fields_to_expand:
+                internal_field_name = field_cache.lookup_by_name(field.table, field_name).db_column
+                field_value = getattr(row, internal_field_name)
+                # now, replace inside the prompt
+                expanded_prompt = expanded_prompt.replace('{' + field_name + '}', field_value)
+            # call chatgpt API
+            translated_value = translation.chatgpt(expanded_prompt)
+            setattr(row, target_internal_field_name, translated_value)
+            rows_to_bulk_update.append(row)
+```
+Besides that, the `ChatGPTFieldType` shares a lot of similarities with `TranslationFieldType`.
