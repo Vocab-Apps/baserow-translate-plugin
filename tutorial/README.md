@@ -6,6 +6,15 @@ We will introduce two new *field types*:
  1. a **Translation** field, which takes a source field, and translates it from one language to another, for example from English to French.
  2. a **ChatGPT** field, which takes a prompt and more or more source fields, and retrieves output from the OpenAI API.
 
+Here's what the translation field looks like:
+![create french translation field](03_create_translation_field.png)
+And the result:
+![automatic translation from english to french](04_automatic_translation.png)
+The ChatGPT field allows you to enter a prompt which references other fields, like this:
+![create chatgpt field](05_add_chatgpt_field.png)
+And the result:
+![chatgpt output](06_chatgpt_output.png)
+
 The full example code is here: https://github.com/Language-Tools/baserow-translate-plugin
 
  ## Actually, what can Baserow plugins do ?
@@ -17,3 +26,4 @@ The full example code is here: https://github.com/Language-Tools/baserow-transla
  ## What are limitations of plugins ?
  Technically, you can do lots of things with plugins, and pretty much customize every aspect of Baserow. Right now, plugins need to be installed offline and deployed in a standalone Baserow instance, there is no such thing as an online marketplace where anyone can install a plugin with a click. If you are familiar with self-hosting apps, this is not a concern.
 
+[Step 1: Get Started](STEP1_GETTING_STARTED.md)
