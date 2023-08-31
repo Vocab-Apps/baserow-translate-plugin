@@ -45,7 +45,7 @@ The `ChatGPTField` model is very simple, it just contains a string, long enough 
 ## Field Types
 After creating the field models, we need to tell our Baserow plugin how these new fields will behave. Let's open a new file: `plugins/translate_plugin/backend/src/translate_plugin/field_types.py`
 
-The code for the field types will be complicated, so I won't copy it entirely here, you can look at the sample code and copy from there. But i'll cover a few points.
+The code for the field types will be complicated, so I won't copy it entirely here, you can look at the sample code and copy from there (https://github.com/Language-Tools/baserow-translate-plugin). But i'll cover a few points.
 
 First, we need to declare the field type properly, the *type* wil uniquely identify the filed, and model_class indicates the field model we'll use to store the atttributes of the field.
 
