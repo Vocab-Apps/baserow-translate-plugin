@@ -42,7 +42,7 @@ drwxr-xr-x. 1 luc luc   32 Aug 23 06:08 plugins
 ```
 
 ## Startup Baserow with the plugin installed
-First, we're going to start up Baserow. We haven't added any custom code, so when things start up, you'll just have a self-hosted Baserow instance, but we want to make sure everything is working. Because I am overriding `$BASEROW_PUBLIC_URL`, and because i've already got a reverse proxy running on port 443, I need to make a small change to `docker-compose.dev.yml` first:
+First, we're going to start up Baserow. We haven't added any custom code, so when things start up, you'll just have a self-hosted Baserow instance, but we want to make sure everything is working. Because I am overriding `$BASEROW_PUBLIC_URL`, and because i've already got a reverse proxy running on port 443, I need to make a small change to `docker-compose.dev.yml` first. Also, I want to be able to set the OpenAI API key.
 change this:
 ```
     ports:
@@ -58,6 +58,7 @@ to this:
       - "8443:443"
     environment:
       BASEROW_PUBLIC_URL: ${BASEROW_PUBLIC_URL:-http://localhost:8000}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
 ```
 
 Now we can pretty much follow the official instructions from Baserow:
