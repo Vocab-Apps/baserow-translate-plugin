@@ -145,3 +145,38 @@ export default {
 }
 </script>
 ```
+
+## Create Field Types
+We need to create a Field Type object on the frontend as well. Open `plugins/translate_plugin/web-frontend/modules/translate-plugin/fieldtypes.js`, i'll comment some of the code:
+
+the `getType` method corresponds to the field type we used in the python code in the backend.
+```
+export class TranslationFieldType extends FieldType {
+  static getType() {
+    return 'translation'
+  }
+```
+Make sure this points to the VueJS component we created earlier:
+```
+  getFormComponent() {
+    return TranslationSubForm
+  }
+```
+For the rest of the functions, we use pretty much the same as a regular Baserow text field, so I won't comment on those, that code is straightforward.
+
+## Register Field Types
+In the frontend as well, we need to register those field types. Open `plugins/translate_plugin/web-frontend/modules/translate-plugin/plugin.js`
+
+It should look like this:
+```
+import { PluginNamePlugin } from '@translate-plugin/plugins'
+import {TranslationFieldType} from '@baserow-translate-plugin/fieldtypes'
+import {ChatGPTFieldType} from '@baserow-translate-plugin/fieldtypes'
+
+export default (context) => {
+  const { app } = context
+  app.$registry.register('plugin', new PluginNamePlugin(context))
+  app.$registry.register('field', new TranslationFieldType(context))
+  app.$registry.register('field', new ChatGPTFieldType(context))  
+}
+```
