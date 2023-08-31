@@ -1,4 +1,5 @@
 # Run
+## Startup Baserow
 We are done with all the changes, let's run the baserow plugin. If you have an OpenAI API key, you can set the corresponding environment variable:
 ```
 export OPENAI_API_KEY=<your OpenAI API key>
@@ -26,3 +27,20 @@ translate-plugin  | 2023-08-31 01:32:50,231 INFO success: caddy entered RUNNING 
 ```
 
 Note that the URL will be different in your case.
+
+## Try out the new field types
+Login to your baserow instance running the plugin. In my case, I need to go to `http://vocabai.webdev.ipv6n.net:8000`, create a user, then I have access to the dashboard. I then create a new table:
+![create new table](01_create_table.png)
+I modify the *Name* field, I want that to be my *English* field:
+![create english field](02_edit_field.png)
+Then, I create a French translation field:
+![create french translation field](03_create_translation_field.png)
+You should see the automatic translation take place when you edit text in the *English* field.
+![automatic translation from english to french](04_automatic_translation.png)
+Now, let's add a ChatGPT field, we'll ask a question about the English text, though you could ask for a translation, using the right prompt.
+![create chatgpt field](05_add_chatgpt_field.png)
+You should see the result of the ChatGPT queries:
+![chatgpt output](06_chatgpt_output.png)
+
+## This is the end of the tutorial 
+Need more information ? https://baserow.io/docs/ or https://community.baserow.io/ .
