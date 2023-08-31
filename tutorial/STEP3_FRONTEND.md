@@ -180,3 +180,5 @@ export default (context) => {
   app.$registry.register('field', new ChatGPTFieldType(context))  
 }
 ```
+
+[Step 4: Run](STEP4_RUN.md)

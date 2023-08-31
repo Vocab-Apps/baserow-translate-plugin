@@ -160,3 +160,5 @@ Now start up again. You should see docker install the argostranslate and openai 
 ```
 docker compose -f docker-compose.dev.yml up --build
 ```
+
+[Step 2: Field Types](STEP2_FIELDTYPES.md)

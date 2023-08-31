@@ -346,3 +346,5 @@ Syncing default roles: 100%|██████████| 7/7 [00:00<00:00, 64
 ```
 
 And we are now completely done with the backend changes. Let's move on to the frontend.
+
+[Step 3: Front End Changes](STEP3_FRONTEND.md)
