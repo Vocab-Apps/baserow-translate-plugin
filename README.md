@@ -1,6 +1,8 @@
 # Baserow Translate Plugin
 
-## Baserow Plugins
+This repository contains sample code for the Baserow Translate plugin, described in the tutorial here: https://baserow.io/blog/baserow-gpt-translate-plugin?utm_source=community&utm_medium=social&utm_campaign=plugin%20for%20language%20translation
+
+## What are Baserow Plugins ?
 
 A Baserow plugin can be used to extend or change the functionality of Baserow.
 Specifically a plugin is a folder with a `backend` and/or `web-frontend` folder.
