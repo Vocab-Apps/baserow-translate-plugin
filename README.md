@@ -1,6 +1,6 @@
 # Baserow Translate Plugin
 
-This repository contains sample code for the Baserow Translate plugin, described in the tutorial here: https://baserow.io/blog/baserow-gpt-translate-plugin?utm_source=community&utm_medium=social&utm_campaign=plugin%20for%20language%20translation
+This repository contains sample code for the Baserow Translate plugin, described in the tutorial here: https://baserow.io/blog/baserow-gpt-translate-plugin
 
 ## What are Baserow Plugins ?
 
